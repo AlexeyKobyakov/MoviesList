@@ -1,6 +1,6 @@
 # Movies List
 
-https://github.com/Alexekov/MoviesList
+https://github.com/AlexeyKobyakov/MoviesList
 
 ## Описание
 
