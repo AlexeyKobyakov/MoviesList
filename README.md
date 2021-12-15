@@ -44,6 +44,5 @@ https://api.nytimes.com/svc/movies/v2/reviews/all.json
 
 ## Реализация
 
-![Screenshot 1](/1.png?raw=true)
-![Screenshot 2](/2.png?raw=true)
-
+![Screenshot 1](/1.png?raw=false)
+![Screenshot 2](/2.png?raw=false)
