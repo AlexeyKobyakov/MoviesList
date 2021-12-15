@@ -1,4 +1,4 @@
-# Spirit Level
+# Movies List
 
 https://github.com/Alexekov/MoviesList
 
@@ -42,5 +42,8 @@ https://api.nytimes.com/svc/movies/v2/reviews/all.json
 
 Для быстрой оценки проекта, пожалуйста, оставьте ключ api в build.gradle в дебаг ветке
 
+## Реализация
 
+![Screenshot 1](/1.png?raw=true)
+![Screenshot 2](/2.png?raw=true)
 
