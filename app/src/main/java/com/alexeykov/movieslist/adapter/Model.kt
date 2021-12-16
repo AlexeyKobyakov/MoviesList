@@ -16,8 +16,8 @@ data class MovieItem(
     var imageWidth: Int
 )
 
-data class LoadingStateItem(
+/* data class LoadingStateItem(
     var isLoading: Boolean,
     var isRetry: Boolean,
     var error_message: String
-)
+) */

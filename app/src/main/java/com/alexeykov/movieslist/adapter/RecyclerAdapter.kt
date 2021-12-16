@@ -1,5 +1,7 @@
 package com.alexeykov.movieslist.adapter
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,20 +16,21 @@ import org.json.JSONObject
 import java.lang.Exception
 import kotlin.collections.ArrayList
 
+
 class RecyclerAdapter :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var arrayList: MutableList<Model> = ArrayList()
 
     fun submitEmptyItem() {
         val list = ArrayList<Model>()
-        val loadingStateItem = LoadingStateItem(
+/*        val loadingStateItem = LoadingStateItem(
             isLoading = true,
             isRetry = false,
             error_message = ""
-        )
+        )*/
         list.add(Model.LoadingModel)
         arrayList.addAll(list)
-        notifyItemInserted(0)
+        notifyItemInserted(arrayList.size - 1)
     }
 
     fun deleteLast() {
@@ -59,11 +62,17 @@ class RecyclerAdapter :
                 list.add(Model.MovieModel(movieItem))
             }
         }
+//        val startUpdate = arrayList.size - 1
         arrayList.removeAt(arrayList.size - 1)
         arrayList.addAll(list)
         submitEmptyItem()
-        notifyDataSetChanged()
+
+//        Вот вместо этой строчки используем DiffUtil ;)
+//        Но это конечно частный случай и DiffUtil использовать полезно когда непонятно что в списках изменяется.
+//        notifyItemRangeInserted(startUpdate, startUpdate - arrayList.size - 1)
     }
+
+    fun getData():MutableList<Model> = arrayList
 
     override fun getItemCount(): Int = arrayList.size
 
@@ -83,6 +92,7 @@ class RecyclerAdapter :
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = arrayList[position]
+        Log.d(TAG, "bind, position = $position")
         when (holder) {
             is MovieViewHolder -> holder.onBindView(item as Model.MovieModel)
             is LoadingViewHolder -> holder.onBindView()

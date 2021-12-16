@@ -1,10 +1,12 @@
 package com.alexeykov.movieslist.data
 
 import android.widget.Toast
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alexeykov.movieslist.R
+import com.alexeykov.movieslist.adapter.MoviesDiffUtilCallback
 import com.alexeykov.movieslist.adapter.RecyclerAdapter
 import com.google.gson.JsonElement
 import org.json.JSONObject
@@ -57,8 +59,15 @@ class RecyclerViewUpdater(private val recyclerView: RecyclerView) {
                     val jsonObject = JSONObject(element.toString())
                     if (jsonObject.getString("status").equals("OK")) {
                         hasMore = jsonObject.getBoolean("has_more")
+
+                        val oldData = movieAdapter.getData()
+
                         movieAdapter.submitNetData(jsonObject.getString("results"),
                             jsonObject.getInt("num_results"))
+
+                        val moviesDiffUtilCallback = MoviesDiffUtilCallback(oldData, movieAdapter.getData())
+                        val moviesDiffResult = DiffUtil.calculateDiff(moviesDiffUtilCallback)
+                        moviesDiffResult.dispatchUpdatesTo(movieAdapter)
                         loading = false
                     }
                 }
