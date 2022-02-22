@@ -3,12 +3,14 @@ package com.alexeykov.movieslist.activities
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.lifecycle.ViewModelProvider
+import androidx.activity.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alexeykov.movieslist.adapter.RecyclerAdapter
 import com.alexeykov.movieslist.databinding.ActivityMainBinding
+import com.alexeykov.movieslist.viewmodel.MainViewModel
+import com.alexeykov.movieslist.viewmodel.factory
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,7 +18,7 @@ class MainActivity : AppCompatActivity() {
     private val binding: ActivityMainBinding
         get() = _binding ?: throw RuntimeException("ActivityMainBinding is null")
 
-    private lateinit var viewModel:MainViewModel
+    private val viewModel: MainViewModel by viewModels { factory() }
 
     private var movieAdapter: RecyclerAdapter = RecyclerAdapter()
 
@@ -24,8 +26,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        viewModel = ViewModelProvider(this, MainViewModelFactory()).get(MainViewModel::class.java)
 
         binding.recyclerView.adapter = movieAdapter
         viewModel.observableList.observe(this) {

@@ -1,6 +1,7 @@
-package com.alexeykov.movieslist.activities
+package com.alexeykov.movieslist.viewmodel
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.alexeykov.movieslist.MoviesConstants.TAG
@@ -21,9 +22,14 @@ class MainViewModel : ViewModel() {
 
     private var moviesList: MutableList<Model> = ArrayList()
 
-    var observableList = MutableLiveData<List<Model>>()
-    val errorMessage = MutableLiveData<Int>()
-    val errorLoadingMessage = MutableLiveData<String>()
+    private val _observableList = MutableLiveData<List<Model>>()
+    val observableList: LiveData<List<Model>> = _observableList
+
+    private val _errorMessage = MutableLiveData<Int>()
+    val errorMessage: LiveData<Int> = _errorMessage
+
+    private val _errorLoadingMessage = MutableLiveData<String>()
+    val errorLoadingMessage: LiveData<String> = _errorLoadingMessage
 
     private var rService: RetrofitServices = NyTimesData.retrofitService
 
@@ -40,7 +46,7 @@ class MainViewModel : ViewModel() {
 
     private fun setEmptyList() {
         moviesList.add(Model.LoadingModel)
-        observableList.value.apply { moviesList }
+        _observableList.value = moviesList
     }
 
     private fun getAllMoviesList() {
@@ -51,9 +57,9 @@ class MainViewModel : ViewModel() {
             }
             rService.getMovieList(nextOffset).enqueue(object : Callback<JsonElement> {
                 override fun onFailure(call: Call<JsonElement>, t: Throwable) {
-                    errorLoadingMessage.postValue(t.message)
+                    _errorLoadingMessage.postValue(t.message)
                     moviesList.removeAt(moviesList.size - 1)
-                    observableList.value.apply { moviesList }
+                    _observableList.value.apply { moviesList }
                 }
 
                 override fun onResponse(call: Call<JsonElement>, response: Response<JsonElement>) {
@@ -73,9 +79,9 @@ class MainViewModel : ViewModel() {
             if (!endListReached) {
                 endListReached = true
                 moviesList.removeAt(moviesList.size - 1)
-                observableList.value.apply { moviesList }
+                _observableList.value = moviesList
             } else {
-                errorMessage.postValue(R.string.no_more_data)
+                _errorMessage.postValue(R.string.no_more_data)
             }
         }
     }
@@ -119,10 +125,7 @@ class MainViewModel : ViewModel() {
         moviesList.removeAt(moviesList.size - 1)
         moviesList.addAll(list)
         moviesList.add(Model.LoadingModel)
-        observableList.value.apply { moviesList }
-//        Вот вместо этой строчки используем DiffUtil ;)
-//        Но это конечно частный случай и DiffUtil использовать полезно когда непонятно что в списках изменяется.
-//        notifyItemRangeInserted(startUpdate, startUpdate - arrayList.size - 1)
+        _observableList.value = moviesList
     }
 
     companion object {
