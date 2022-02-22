@@ -3,90 +3,55 @@ package com.alexeykov.movieslist.adapter
 import android.content.ContentValues.TAG
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.alexeykov.movieslist.R
+import com.alexeykov.movieslist.databinding.RecyclerItemBinding
+import com.alexeykov.movieslist.databinding.RecyclerLoadingBinding
 import com.squareup.picasso.Picasso
-import org.json.JSONArray
-import org.json.JSONObject
-import java.lang.Exception
 import kotlin.collections.ArrayList
-
 
 class RecyclerAdapter :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var arrayList: MutableList<Model> = ArrayList()
 
-    fun submitEmptyItem() {
-        val list = ArrayList<Model>()
-/*        val loadingStateItem = LoadingStateItem(
-            isLoading = true,
-            isRetry = false,
-            error_message = ""
-        )*/
-        list.add(Model.LoadingModel)
-        arrayList.addAll(list)
-        notifyItemInserted(arrayList.size - 1)
+    fun setMovieList(movies: List<Model>) {
+//        val moviesDiffUtilCallback = MoviesDiffUtilCallback(movies.toMutableList(), arrayList)
+//        val moviesDiffResult = DiffUtil.calculateDiff(moviesDiffUtilCallback)
+//        moviesDiffResult.dispatchUpdatesTo(this)
+        arrayList = movies.toMutableList()
+        notifyDataSetChanged()
     }
 
-    fun deleteLast() {
-        arrayList.removeAt(arrayList.size - 1)
-        notifyItemRemoved(arrayList.size - 1)
-    }
-
-    fun submitNetData(response: String, size: Int) {
-        val resultsArray = JSONArray(response)
-        val list = ArrayList<Model>()
-
-        for (i in 0 until size - 1) {
-            val item = JSONObject(resultsArray.getString(i))
-            val multimediaString = item.getString("multimedia")
-            val multimedia: JSONObject? = try {
-                JSONObject(multimediaString) }
-            catch (e: Exception) {
-                null
-            }
-            if (multimedia != null) {
-                val movieItem = MovieItem(
-                    name = item.getString("display_title"),
-                    description = item.getString("summary_short"),
-                    imageHeight = multimedia.getInt("height"),
-                    imageWidth = multimedia.getInt("width"),
-                    imageUrl = multimedia.getString("src")
-
-                )
-                list.add(Model.MovieModel(movieItem))
-            }
-        }
-//        val startUpdate = arrayList.size - 1
-        arrayList.removeAt(arrayList.size - 1)
-        arrayList.addAll(list)
-        submitEmptyItem()
-
-//        Вот вместо этой строчки используем DiffUtil ;)
-//        Но это конечно частный случай и DiffUtil использовать полезно когда непонятно что в списках изменяется.
-//        notifyItemRangeInserted(startUpdate, startUpdate - arrayList.size - 1)
-    }
-
-    fun getData():MutableList<Model> = arrayList
+    fun getData(): MutableList<Model> = arrayList
 
     override fun getItemCount(): Int = arrayList.size
 
     override fun getItemViewType(position: Int) = when (arrayList[position]) {
-        is Model.MovieModel -> R.layout.recycler_item
-        is Model.LoadingModel -> R.layout.recycler_loading
+        is Model.MovieModel -> MOVIE_ITEM
+        is Model.LoadingModel -> LOADING_ITEM
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        val v = layoutInflater.inflate(viewType, parent, false)
+
         return when (viewType) {
-            R.layout.recycler_item -> MovieViewHolder(v)
-            else -> LoadingViewHolder(v)
+            MOVIE_ITEM -> {
+                val binding = RecyclerItemBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                MovieViewHolder(binding)
+            }
+            else -> {
+                val binding = RecyclerLoadingBinding.inflate(
+                    LayoutInflater.from(parent.context),
+                    parent,
+                    false
+                )
+                LoadingViewHolder(binding)
+            }
         }
     }
 
@@ -99,35 +64,31 @@ class RecyclerAdapter :
         }
     }
 
-    class MovieViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private var nameTextView: TextView? = null
-        private var descriptionTextView: TextView? = null
-        private var image: ImageView? = null
-
-        init {
-            nameTextView = itemView.findViewById(R.id.movie_name)
-            descriptionTextView = itemView.findViewById(R.id.movie_description)
-            image = itemView.findViewById(R.id.movie_image)
-        }
-
+    inner class MovieViewHolder(
+        private val binding: RecyclerItemBinding,
+    ) : RecyclerView.ViewHolder(binding.root) {
         fun onBindView(item: Model.MovieModel) {
-            nameTextView?.text = item.movieItem.name
-            descriptionTextView?.text = item.movieItem.description
-            image?.layoutParams?.width = item.movieItem.imageWidth
-            image?.layoutParams?.height = item.movieItem.imageHeight
-            Picasso.get().load(item.movieItem.imageUrl).placeholder(R.drawable.ic_movies)
-                .error(R.drawable.ic_error).into(image)
+            with(binding) {
+                movieName.text = item.movieItem.name
+                movieDescription.text = item.movieItem.description
+                movieImage.layoutParams?.width = item.movieItem.imageWidth
+                movieImage.layoutParams?.height = item.movieItem.imageHeight
+                Picasso.get().load(item.movieItem.imageUrl).placeholder(R.drawable.ic_movies)
+                    .error(R.drawable.ic_error).into(movieImage)
+            }
         }
     }
 
-    class LoadingViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private var progressBar: ProgressBar? = null
-
-        init {
-            progressBar = itemView.findViewById(R.id.progress_bar)
-        }
+    inner class LoadingViewHolder(
+        binding: RecyclerLoadingBinding,
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         fun onBindView() {
         }
+    }
+
+    companion object {
+        const val MOVIE_ITEM = 1
+        const val LOADING_ITEM = 2
     }
 }
